@@ -126,3 +126,19 @@ create trigger email_verified_trigger
 after update of email_confirmed_at on auth.users
 for each row
 execute function on_email_verified();
+
+create or replace function on_profile_added_to_company() 
+returns trigger as $$
+begin
+  insert into customer_stamps
+  values(default, new.profile_id, new.company_id, default, default);
+  insert into customer_rewards
+  values(default, new.profile_id, new.company_id, default, default);
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create or replace trigger profile_added_to_company
+after insert on company_customers
+for each row
+execute function on_profile_added_to_company();
